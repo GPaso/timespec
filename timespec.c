@@ -503,11 +503,11 @@ struct timespec timespec_normalise(struct timespec ts)
 }
 
 #define TEST_DIV_FUNC(ts_sec, ts_nsec, divisor, expect_sec, expect_nsec) { \
-	struct timespec ts1 = { .tv_sec = ts_sec, .tv_nsec = ts_nsec }; \
+	struct timespec ts = { .tv_sec = ts_sec, .tv_nsec = ts_nsec }; \
 	struct timespec got = timespec_div(ts, divisor); \
 	if(got.tv_sec != expect_sec || got.tv_nsec != expect_nsec) \
 	{ \
-		printf("%s:%d: " timespec_div "({%ld, %ld}, %ld) returned wrong value\n", __FILE__, __LINE__, \
+		printf("%s:%d:  timespec_div ({%ld, %ld}, %ld) returned wrong value\n", __FILE__, __LINE__, \
 			(long)(ts_sec), (long)(ts_nsec), (long)(divisor)); \
 		printf("    Expected: {%ld, %ld}\n", (long)(expect_sec), (long)(expect_nsec)); \
 		printf("    Got:      {%ld, %ld}\n", (long)(got.tv_sec), (long)(got.tv_nsec)); \
