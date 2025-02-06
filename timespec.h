@@ -42,6 +42,7 @@ extern "C" {
 
 struct timespec timespec_add(struct timespec ts1, struct timespec ts2);
 struct timespec timespec_sub(struct timespec ts1, struct timespec ts2);
+struct timespec timespec_div(struct timespec ts, long divisor);
 struct timespec timespec_mod(struct timespec ts1, struct timespec ts2);
 
 struct timespec timespec_min(struct timespec ts1, struct timespec ts2);
