@@ -116,14 +116,14 @@ struct timespec timespec_div(struct timespec ts, long divisor)
 	ts = timespec_normalise(ts);
 	
 	// Calculate total nanoseconds
-	long long total_nsec = ts.tv_sec * NSEC_PER_SEC + ts.tv_nsec;
+	int64_t total_nsec = (int64_t)ts.tv_sec * NSEC_PER_SEC + ts.tv_nsec;
 
 	// Divide total nanoseconds
 	total_nsec /= divisor;
 
 	// Normalize the result
-	result.tv_sec = total_nsec / NSEC_PER_SEC;
-	result.tv_nsec = total_nsec % NSEC_PER_SEC;
+	result.tv_sec = (time_t)total_nsec / NSEC_PER_SEC;
+	result.tv_nsec = (long)total_nsec % NSEC_PER_SEC;
 
 	return result;
 }
