@@ -116,7 +116,7 @@ struct timespec timespec_div(struct timespec ts, long divisor)
 	ts = timespec_normalise(ts);
 	
 	// Calculate total nanoseconds
-	long long total_nsec = (long long)ts.tv_sec * NSEC_PER_SEC + ts.tv_nsec;
+	unsigned long long total_nsec = (unsigned long long)ts.tv_sec * NSEC_PER_SEC + ts.tv_nsec;
 
 	// Divide total nanoseconds
 	total_nsec /= divisor;
@@ -656,7 +656,7 @@ int main()
 	TEST_DIV_FUNC(10,0,		3,	3,333333333);
 	TEST_DIV_FUNC(1040,200000000,	7,	148,600000000);
 	TEST_DIV_FUNC(222,222222222,	2,	111,111111111);
-	TEST_DIV_FUNC(0,000000125,	25,	0,000000005);
+	TEST_DIV_FUNC(0,125,		25,	0,5);
 
 	// timespec_clamp
 	
