@@ -99,6 +99,35 @@ struct timespec timespec_sub(struct timespec ts1, struct timespec ts2)
 	return timespec_normalise(ts1);
 }
 
+/** \fn struct timespec timespec_div(struct timespec ts, long divisor)
+ *  \brief Returns the result of dividing a timespec structure by a long number.
+ */
+struct timespec timespec_div(struct timespec ts, long divisor)
+{
+	struct timespec result = {0, 0};
+
+	// Prevent division by zero
+	if (divisor == 0)
+		return result;
+	
+	/* Normalise inputs to prevent tv_nsec rollover if whole-second values
+	 * are packed in it.
+	*/
+	ts = timespec_normalise(ts);
+	
+	// Calculate total nanoseconds
+	long long total_nsec = ts.tv_sec * NSEC_PER_SEC + ts.tv_nsec;
+
+	// Divide total nanoseconds
+	total_nsec /= divisor;
+
+	// Normalize the result
+	result.tv_sec = total_nsec / NSEC_PER_SEC;
+	result.tv_nsec = total_nsec % NSEC_PER_SEC;
+
+	return result;
+}
+
 /** \fn struct timespec timespec_mod(struct timespec ts1, struct timespec ts2)
  *  \brief Returns the remainder left over after dividing ts1 by ts2 (ts1%ts2).
 */
@@ -473,6 +502,19 @@ struct timespec timespec_normalise(struct timespec ts)
 	} \
 }
 
+#define TEST_DIV_FUNC(ts_sec, ts_nsec, divisor, expect_sec, expect_nsec) { \
+	struct timespec ts1 = { .tv_sec = ts_sec, .tv_nsec = ts_nsec }; \
+	struct timespec got = timespec_div(ts, divisor); \
+	if(got.tv_sec != expect_sec || got.tv_nsec != expect_nsec) \
+	{ \
+		printf("%s:%d: " timespec_div "({%ld, %ld}, %ld) returned wrong value\n", __FILE__, __LINE__, \
+			(long)(ts_sec), (long)(ts_nsec), (long)(divisor)); \
+		printf("    Expected: {%ld, %ld}\n", (long)(expect_sec), (long)(expect_nsec)); \
+		printf("    Got:      {%ld, %ld}\n", (long)(got.tv_sec), (long)(got.tv_nsec)); \
+		++result; \
+	} \
+}
+
 #define TEST_FROM_DOUBLE(d_secs, expect_sec, expect_nsec) { \
 	struct timespec got = timespec_from_double(d_secs);  \
 	if(got.tv_sec != expect_sec || got.tv_nsec != expect_nsec) \
@@ -603,7 +645,19 @@ int main()
 	TEST_BINOP(timespec_mod, 12345,54321, 0,100001,    0,5555);
 	TEST_BINOP(timespec_mod, LONG_MAX,0,  0,1,         0,0);
 	TEST_BINOP(timespec_mod, LONG_MAX,0,  LONG_MAX,1,  LONG_MAX,0);
-	
+
+	//timespec_div
+	TEST_DIV_FUNC(1,500000000,	0,	0,0);
+	TEST_DIV_FUNC(10,0,		2,	5,0);
+	TEST_DIV_FUNC(7,0,		2,	3,500000000);
+	TEST_DIV_FUNC(5,500000000,	5,	1,100000000);
+	TEST_DIV_FUNC(0,0,		3,	0,0);
+	TEST_DIV_FUNC(10,500000000,	3,	3,500000000);
+	TEST_DIV_FUNC(10,0,		3,	3,333333333);
+	TEST_DIV_FUNC(1040,200000000,	7,	148,600000000);
+	TEST_DIV_FUNC(222,222222222,	2,	111,111111111);
+	TEST_DIV_FUNC(0,000000125,	25,	0,000000005);
+
 	// timespec_clamp
 	
 	TEST_TRINOP(timespec_clamp, 0,0,    0,0,   0,0,   0,0);
