@@ -114,9 +114,10 @@ struct timespec timespec_div(struct timespec ts, long divisor)
 	 * are packed in it.
 	*/
 	ts = timespec_normalise(ts);
-	
-	// Calculate total nanoseconds
-	unsigned long long total_nsec = (unsigned long long)ts.tv_sec * NSEC_PER_SEC + ts.tv_nsec;
+
+	/*Only works in x64
+	// Calculate total nanoseconds 
+	//unsigned long long total_nsec = (unsigned long long)ts.tv_sec * NSEC_PER_SEC + ts.tv_nsec;
 
 	// Divide total nanoseconds
 	total_nsec /= divisor;
@@ -124,7 +125,16 @@ struct timespec timespec_div(struct timespec ts, long divisor)
 	// Normalize the result
 	result.tv_sec = (time_t)total_nsec / NSEC_PER_SEC;
 	result.tv_nsec = (long)total_nsec % NSEC_PER_SEC;
+	*/
 
+	// First divide seconds to prevent overflow
+	result.tv_sec = ts.tv_sec / divisor;
+	
+	// Handle the remainder from seconds division plus the original nanoseconds
+	long rem_sec = ts.tv_sec % divisor;
+	long extra_nsec = (rem_sec * NSEC_PER_SEC) / divisor;
+	result.tv_nsec = (ts.tv_nsec / divisor) + extra_nsec;
+	
 	return result;
 }
 
