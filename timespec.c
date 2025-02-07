@@ -131,8 +131,8 @@ struct timespec timespec_div(struct timespec ts, long divisor)
 	result.tv_sec = ts.tv_sec / divisor;
 	
 	// Handle the remainder from seconds division plus the original nanoseconds
-	long rem_sec = ts.tv_sec % divisor;
-	long extra_nsec = (rem_sec * NSEC_PER_SEC) / divisor;
+	unsigned long rem_sec = ts.tv_sec % divisor;
+	unsigned long extra_nsec = (rem_sec * NSEC_PER_SEC) / divisor;
 	result.tv_nsec = (ts.tv_nsec / divisor) + extra_nsec;
 	
 	return result;
