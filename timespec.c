@@ -99,10 +99,10 @@ struct timespec timespec_sub(struct timespec ts1, struct timespec ts2)
 	return timespec_normalise(ts1);
 }
 
-/** \fn struct timespec timespec_div(struct timespec ts, long divisor)
+/** \fn struct timespec timespec_idiv(struct timespec ts, long divisor)
  *  \brief Returns the result of dividing a timespec structure by a long number.
  */
-struct timespec timespec_div(struct timespec ts, long divisor)
+struct timespec timespec_idiv(struct timespec ts, long divisor)
 {
 	struct timespec result = {0, 0};
 
@@ -115,25 +115,13 @@ struct timespec timespec_div(struct timespec ts, long divisor)
 	*/
 	ts = timespec_normalise(ts);
 
-	/*Only works in x64
-	// Calculate total nanoseconds 
-	//unsigned long long total_nsec = (unsigned long long)ts.tv_sec * NSEC_PER_SEC + ts.tv_nsec;
-
-	// Divide total nanoseconds
-	total_nsec /= divisor;
-
-	// Normalize the result
-	result.tv_sec = (time_t)total_nsec / NSEC_PER_SEC;
-	result.tv_nsec = (long)total_nsec % NSEC_PER_SEC;
-	*/
-
 	// First divide seconds to prevent overflow
 	result.tv_sec = ts.tv_sec / divisor;
 	
 	// Handle the remainder from seconds division plus the original nanoseconds
 	unsigned long rem_sec = ts.tv_sec % divisor;
-	unsigned long extra_nsec = (rem_sec * NSEC_PER_SEC) / divisor;
-	result.tv_nsec = (ts.tv_nsec / divisor) + extra_nsec;
+	unsigned long extra_nsec = rem_sec * NSEC_PER_SEC;
+	result.tv_nsec = (ts.tv_nsec + extra_nsec) / divisor;
 	
 	return result;
 }
@@ -514,10 +502,10 @@ struct timespec timespec_normalise(struct timespec ts)
 
 #define TEST_DIV_FUNC(ts_sec, ts_nsec, divisor, expect_sec, expect_nsec) { \
 	struct timespec ts = { .tv_sec = ts_sec, .tv_nsec = ts_nsec }; \
-	struct timespec got = timespec_div(ts, divisor); \
+	struct timespec got = timespec_idiv(ts, divisor); \
 	if(got.tv_sec != expect_sec || got.tv_nsec != expect_nsec) \
 	{ \
-		printf("%s:%d:  timespec_div ({%ld, %ld}, %ld) returned wrong value\n", __FILE__, __LINE__, \
+		printf("%s:%d:  timespec_idiv ({%ld, %ld}, %ld) returned wrong value\n", __FILE__, __LINE__, \
 			(long)(ts_sec), (long)(ts_nsec), (long)(divisor)); \
 		printf("    Expected: {%ld, %ld}\n", (long)(expect_sec), (long)(expect_nsec)); \
 		printf("    Got:      {%ld, %ld}\n", (long)(got.tv_sec), (long)(got.tv_nsec)); \
@@ -656,7 +644,7 @@ int main()
 	TEST_BINOP(timespec_mod, LONG_MAX,0,  0,1,         0,0);
 	TEST_BINOP(timespec_mod, LONG_MAX,0,  LONG_MAX,1,  LONG_MAX,0);
 
-	//timespec_div
+	//timespec_idiv
 	TEST_DIV_FUNC(1,500000000,	0,	0,0);
 	TEST_DIV_FUNC(10,0,		2,	5,0);
 	TEST_DIV_FUNC(7,0,		2,	3,500000000);
