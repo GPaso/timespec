@@ -39,7 +39,7 @@ Returns the result of adding two timespec structures.
 
 Returns the result of subtracting ts2 from ts1.
 
-`struct timespec timespec_div(struct timespec ts, long divisor)`
+`struct timespec timespec_idiv(struct timespec ts, long divisor)`
 
 Returns the result of dividing ts by divisor
 
